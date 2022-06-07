@@ -1,0 +1,58 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amsthm,amssymb,graphicx,mathtools,tikz,hyperref}
+\usepackage[round]{natbib}
+\usepackage{listings}
+
+\title{Analytical approximation for LOO-R2 standard error}
+\author{Leevi Lindgren}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+\section{Taylor approximation for function of two variables}
+
+Let $f(x, y): \mathbb{R}^2 \rightarrow \mathbb{R}$ be a function of two (random) variables. The first order Taylor approximation of function of two variables around point $x_0, y_0$ is given by
+\begin{align}
+    f(x, y) &\approx f(x_0, y_0) + \frac{\partial }{\partial x} f(x_0, y_0) (x - x_0) + \frac{\partial }{\partial y} f(x_0, y_0) (y - y_0) \label{tapprox}
+\end{align}
+
+Now, let's take two random variables $X$ and $Y$ and do the approximation around the expected values $(\mu_X, \mu_Y)$ = $(E[X], E[Y])$. Using \eqref{tapprox} we get
+\begin{align}
+    f(X, Y) \approx f(\mu_X, \mu_Y) + \frac{\partial }{\partial x} f(\mu_X, \mu_Y) (X - \mu_X) + \frac{\partial }{\partial y} f(\mu_X, \mu_Y) (Y - \mu_Y) \label{rvtapprox}
+\end{align}
+
+\subsection{Taylor approximation for expected value}
+Given that terms containing partial derivatives in \eqref{rvtapprox} go to zero under expectation, we get the following, simple, first order approximation for expected value of $f(X, Y)$:
+\begin{align}
+    E[f(X, Y)] \approx f(\mu_X, \mu_Y) \label{eapprox}
+\end{align}
+
+\subsection{Taylor approximation for variance}
+For variance
+\begin{align}
+    \text{var}(f(X, Y)) &= E\left[ \left(f(X, Y) - E[f(X,Y)] \right)^2 \right] \nonumber \\
+    &\approx E\left[ \left( f(X, Y) - f(\mu_X, \mu_Y) \right)^2 \right] \nonumber
+\end{align}
+Next, we plug in \eqref{rvtapprox} for $f(X,Y)$ which yields (we write $\frac{\partial }{\partial x} f(\mu_X, \mu_Y) = \frac{\partial f}{\partial x}$ for notational simplicity):
+\begin{align}
+    \text{var}(f(X, Y)) &\approx E\left[ \left( \frac{\partial f}{\partial x} (X - \mu_X) + \frac{\partial f}{\partial y} (Y - \mu_Y) \right)^2 \right] \nonumber \\
+    &= E\left[ \left( \frac{\partial f}{\partial x}  \right)^2 (X - \mu_X)^2 + 2 \frac{\partial f}{\partial x} \frac{\partial f}{\partial y} (X - \mu_X)(Y - \mu_Y) + \left( \frac{\partial f}{\partial y}  \right)^2 (Y - \mu_Y)^2  \right] \nonumber \\
+    &= \left( \frac{\partial f}{\partial x}  \right)^2 \text{var}(X) + 2 \frac{\partial f}{\partial x} \frac{\partial f}{\partial y} \text{cov}(X, Y) + \left( \frac{\partial f}{\partial y}  \right)^2 \text{var}(Y)
+\end{align}
+
+\section{Approximation for the standard error of LOO-R2}
+LOO-R2 is defined as
+\begin{align}
+\text{R2}_{loo} = 1 - \frac{\text{var}(\hat{e}_{loo}) }{ \text{var}(y)} \label{loor2}
+\end{align}
+
+where $\hat{e}_{loo} = y - \hat{y}_{loo}$. Note that nenominator and denominator of the second term in \eqref{loor2} can be interpreted as mean square error of the LOO predictions and mean squared error of predicting the data with its mean, respectively.
+
+
+
+\end{document}
