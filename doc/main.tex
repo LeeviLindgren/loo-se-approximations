@@ -7,7 +7,7 @@
 \graphicspath{ {../figures/} }
 
 \title{Analytical approximation for LOO-R2 standard error}
-\author{Leevi Lindgren}
+\author{Leevi Lindgren \footnote{I thank Aki Vehtari and Nikolas Siccha for comments.}}
 \date{\today}
 
 \begin{document}
@@ -19,9 +19,11 @@ R-squared, or R2, is a typical measure used to asses how well a model fits to da
 
 If (Bayesian) R2 is computed from the same data that was used to fit the model, it will give an overestimate of the predictive performance on a new, unobserved data. As often we don't have an independent test data, we can use cross validation to estimate the out-of-sample behaviour of the R2. \cite{vehtari_practical_2016} propose efficient and stable method for leave-one-out cross validation using pareto smoothed importance sampling. In the paper, log predictive density is used as the utility describing the predictive performance, but the method can easily be extended for other utilities as well, such as R2.
 
-After computing LOO-R2 estimate, we obviously want to quantify the uncertainty of the estimator. The uncertainty in LOO-R2 comes from not knowing the future data distribution \citep{vehtari_survey_2012}. One way to do it is to use Bayesian bootstrap \citep{rubin_bayesian_1981}. However, this report describes how to quantify the uncertainty using Taylor approximation approach.
+After computing LOO-R2 estimate, we obviously want to quantify the uncertainty of the estimator. The uncertainty in LOO-R2 comes from not knowing the future data distribution \citep{vehtari_survey_2012}. One way to do it is to use Bayesian bootstrap \citep{rubin_bayesian_1981}. However, this report describes how to quantify the uncertainty using an analytical Taylor approximation approach.
 
 The idea is to note that LOO-R2 is defined as a function of a ratio of two random variables. We can then use Taylor approximation of the function and the mean, variance and covariance of the two random variables to approximate the standard error of the LOO-R2 estimator. 
+
+This approach was motivated by the work by \cite{hastings1970monte} who proposes a approximation for the variance of ratio of two random variables. However the formula provided by \cite{hastings1970monte} contains two typos: on page 8, in the formula for variance of the ratio, $Z$ is missing the "bar" symbol and computed variance $s_{\bar{Z}}$ is missing the second power. The missing second power made caused me to mistake it for the standard deviation instead of variance, which was followed by weird simulation results. So the on of the contributions of this report is providing the typo free formula and adding the derivation of the result.
 
 \section{Taylor approximation for function of two variables}
 
@@ -97,15 +99,23 @@ Substituting these into \eqref{varapprox} yields
  \end{align}
  
 \section{Simulation experiments}
-To illustrate behaviour of the proposed analytical approximation, we run a set of simulations with a few different configurations. We proceed as follows: choose number of observations $n$, number of predictors $p$ and observational noise $sigma$ and then, draw predictor matrix $X \in \mathbb{R}^{n \times p}$, $\beta \in \mathbb{R}^{p}$ and $\epsilon \in \mathbb{R}^{n}$ from $N(0, 1)$ and compute $y = X \beta + \epsilon$. We repeat this for 100 for each set of parameters. 
+To illustrate behaviour of the proposed analytical approximation, we run a set of simulations with a few different configurations. We proceed as follows: choose number of observations $n$, number of predictors $p$ and observational noise $\sigma$ and then, draw predictor matrix $X \in \mathbb{R}^{n \times p}$ and $\beta \in \mathbb{R}^{p}$ from $N(0, 1)$ and  $\epsilon \in \mathbb{R}^{n}$ from $N(0, \sigma^2)$. Then we compute $y = X \beta + \epsilon$ for which we with linear model using R-package rstanarm \citep{rstanarm}. We repeat this for 100 for each set of parameters. See underlying code from \url{https://github.com/LeeviLindgren/loo-r2-se}.
 
 Figure \ref{fig:simres} plots standard error obtained from the Taylor approximation and Bayesian bootstrap for different values of $n$, $\sigma$ and $p$. Diagonal line represents points where x and y axis values are equal and the actual simulation results are represented with the dots. Dots' colour indicates the underlying LOO-R2 estimate obtained by taking the mean of BB samples.
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{simres.png}
-    \caption{ Simulation results}
+    \caption{ Simulation results for larger values of n}
     \label{fig:simres}
 \end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{sim}
+    \caption{ Simulation results for lower values of n}
+    \label{fig:simres_low_n}
+\end{figure}
+
 
 \newpage
 \bibliographystyle{plainnat}
