@@ -97,7 +97,7 @@ Substituting these into \eqref{varapprox} yields
  \end{align}
  
 \section{Simulation experiments}
-To illustrate behaviour of the proposed analytical approximation, we run a set of simulations with a few different configurations. We proceed as follows: choose number of observations $n$, number of predictors $p$ and observational noise $sigma$ and then, draw predictor matrix $X \in \mathbb{R}^{n \times p}$, $\beta \in \mathbb{R}^{p}$ and $\epsilon \in \mathbb{R}^{n}$ from $N(0, 1)$ and compute $y = X \beta + \epsilon$. We repeat this for 100 for each set of parameters. 
+To illustrate behaviour of the proposed analytical approximation, we run a set of simulations with a few different configurations. We proceed as follows: choose number of observations $n$, number of predictors $p$ and observational noise $sigma$ and then, draw predictor matrix $X \in \mathbb{R}^{n \times p}$, $\beta \in \mathbb{R}^{p}$ and $\epsilon \in \mathbb{R}^{n}$ from $N(0, 1)$ and compute $y = X \beta + \epsilon$. We repeat this for 100 for each set of parameters. See underlying code from \url{https://github.com/LeeviLindgren/loo-r2-se}.
 
 Figure \ref{fig:simres} plots standard error obtained from the Taylor approximation and Bayesian bootstrap for different values of $n$, $\sigma$ and $p$. Diagonal line represents points where x and y axis values are equal and the actual simulation results are represented with the dots. Dots' colour indicates the underlying LOO-R2 estimate obtained by taking the mean of BB samples.
 \begin{figure}
