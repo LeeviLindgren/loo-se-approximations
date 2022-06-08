@@ -3,6 +3,8 @@
 \usepackage{amsmath,amsthm,amssymb,graphicx,mathtools,tikz,hyperref}
 \usepackage[round]{natbib}
 \usepackage{listings}
+\usepackage{graphicx}
+\graphicspath{ {../figures/} }
 
 \title{Analytical approximation for LOO-R2 standard error}
 \author{Leevi Lindgren}
@@ -88,5 +90,11 @@ Substituting these into \eqref{varapprox} yields
  \end{align}
  
 \section{Simulation experiments}
+\begin{figure}
+    \centering
+    \includegraphics[width=\paperwidth, height=\textheight]{simres.png}
+    \caption{Caption}
+    \label{fig:my_label}
+\end{figure}
 
 \end{document}
