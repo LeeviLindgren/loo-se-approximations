@@ -15,6 +15,13 @@
 \maketitle
 
 \section{Introduction}
+R-squared, or R2, is a typical measure used to asses how well a model fits to data. \cite{gelman_r-squared_2019} propose a Bayesian version of the R2 as the classical R2 might get values larger than 1 for Bayesian regression models. See details from the paper. A nice property of Bayesian R2 is that we get distribution of R2 values "for free", as it is computed using posterior predictive mean values of the model. This means that we can quantify the uncertainty of the estimator easily.
+
+If (Bayesian) R2 is computed from the same data that was used to fit the model, it will give an overestimate of the predictive performance on a new, unobserved data. As often we don't have an independent test data, we can use cross validation to estimate the out-of-sample behaviour of the R2. \cite{vehtari_practical_2016} propose efficient and stable method for leave-one-out cross validation using pareto smoothed importance sampling. In the paper, log predictive density is used as the utility describing the predictive performance, but the method can easily be extended for other utilities as well, such as R2.
+
+After computing LOO-R2 estimate, we obviously want to quantify the uncertainty of the estimator. The uncertainty in LOO-R2 comes from not knowing the future data distribution \citep{vehtari_survey_2012}. One way to do it is to use Bayesian bootstrap \citep{rubin_bayesian_1981}. However, this report describes how to quantify the uncertainty using Taylor approximation approach.
+
+The idea is to note that LOO-R2 is defined as a function of a ratio of two random variables. We can then use Taylor approximation of the function and the mean, variance and covariance of the two random variables to approximate the standard error of the LOO-R2 estimator. 
 
 \section{Taylor approximation for function of two variables}
 
@@ -58,7 +65,7 @@ where $\hat{e}_{loo} = y - \hat{y}_{loo}$. Note that nominator and denominator o
     \text{R2}_{loo} = 1 - \frac{\text{MSE}_{\hat{e}} }{ \text{MSE}_y} \label{mser2}
 \end{align}
 
-We can then compute the estimatator for the variance of both using approach in (uncertainty loo paper reference here).
+We can then compute the estimatator for the variance of both using same approach as in \cite{sivula_uncertainty_2022} and \cite{vehtari_practical_2016}.
 \begin{align}
     \text{var}(\text{MSE}_{\hat{e}}) &= \frac{1}{n (n-1)} \sum_{i = 1}^n \left( \hat{e}_{loo, i}^2 - \text{MSE}_{\hat{e}} \right)^2 \label{vare}
 \end{align}
@@ -90,11 +97,18 @@ Substituting these into \eqref{varapprox} yields
  \end{align}
  
 \section{Simulation experiments}
+To illustrate behaviour of the proposed analytical approximation, we run a set of simulations with a few different configurations. We proceed as follows: choose number of observations $n$, number of predictors $p$ and observational noise $sigma$ and then, draw predictor matrix $X \in \mathbb{R}^{n \times p}$, $\beta \in \mathbb{R}^{p}$ and $\epsilon \in \mathbb{R}^{n}$ from $N(0, 1)$ and compute $y = X \beta + \epsilon$. We repeat this for 100 for each set of parameters. 
+
+Figure \ref{fig:simres} plots standard error obtained from the Taylor approximation and Bayesian bootstrap for different values of $n$, $\sigma$ and $p$. Diagonal line represents points where x and y axis values are equal and the actual simulation results are represented with the dots. Dots' colour indicates the underlying LOO-R2 estimate obtained by taking the mean of BB samples.
 \begin{figure}
     \centering
-    \includegraphics[width=\paperwidth, height=\textheight]{simres.png}
-    \caption{Caption}
-    \label{fig:my_label}
+    \includegraphics[width=\textwidth]{simres.png}
+    \caption{ Simulation results}
+    \label{fig:simres}
 \end{figure}
+
+\newpage
+\bibliographystyle{plainnat}
+\bibliography{references.bib}
 
 \end{document}
