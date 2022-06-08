@@ -27,7 +27,7 @@ jobs:
         uses: xu-cheng/latex-action@v2
         with:
           root_file: main.tex
-          working_directory: ./docs/
+          working_directory: ./doc/
           
       - name: push changes to remote
        # env: 
