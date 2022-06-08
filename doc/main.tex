@@ -23,7 +23,7 @@ After computing LOO-R2 estimate, we obviously want to quantify the uncertainty o
 
 The idea is to note that LOO-R2 is defined as a function of a ratio of two random variables. We can then use Taylor approximation of the function and the mean, variance and covariance of the two random variables to approximate the standard error of the LOO-R2 estimator. 
 
-This approach was motivated by the work by \cite{hastings1970monte} who proposes a approximation for the variance of ratio of two random variables. However the formula provided by \cite{hastings1970monte} contains two typos: on page 8, in the formula for variance of the ratio, $Z$ is missing the "bar" symbol and computed variance $s_{\bar{Z}}$ is missing the second power. The missing second power made caused me to mistake it for the standard deviation instead of variance, which was followed by weird simulation results. So the on of the contributions of this report is providing the typo free formula and adding the derivation of the result.
+This approach was motivated by the work by \cite{hastings1970monte} who proposes an approximation for the variance of ratio of two random variables. However the formula provided by \cite{hastings1970monte} contains two typos: on page 8, in the formula for variance of the ratio, $Z$ is missing the "bar" symbol and computed variance $s_{\bar{Z}}$ is missing the second power. The missing second power made caused me to mistake it for the standard deviation instead of variance, which was followed by weird simulation results. So the on of the contributions of this report is providing the typo free formula and adding the derivation of the result.
 
 \section{Taylor approximation for function of two variables}
 
