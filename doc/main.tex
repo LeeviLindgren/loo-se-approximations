@@ -42,7 +42,7 @@ Next, we plug in \eqref{rvtapprox} for $f(X,Y)$ which yields (we write $\frac{\p
 \begin{align}
     \text{var}(f(X, Y)) &\approx E\left[ \left( \frac{\partial f}{\partial x} (X - \mu_X) + \frac{\partial f}{\partial y} (Y - \mu_Y) \right)^2 \right] \nonumber \\
     &= E\left[ \left( \frac{\partial f}{\partial x}  \right)^2 (X - \mu_X)^2 + 2 \frac{\partial f}{\partial x} \frac{\partial f}{\partial y} (X - \mu_X)(Y - \mu_Y) + \left( \frac{\partial f}{\partial y}  \right)^2 (Y - \mu_Y)^2  \right] \nonumber \\
-    &= \left( \frac{\partial f}{\partial x}  \right)^2 \text{var}(X) + 2 \frac{\partial f}{\partial x} \frac{\partial f}{\partial y} \text{cov}(X, Y) + \left( \frac{\partial f}{\partial y}  \right)^2 \text{var}(Y)
+    &= \left( \frac{\partial f}{\partial x}  \right)^2 \text{var}(X) + 2 \frac{\partial f}{\partial x} \frac{\partial f}{\partial y} \text{cov}(X, Y) + \left( \frac{\partial f}{\partial y}  \right)^2 \text{var}(Y) \label{varapprox}
 \end{align}
 
 \section{Approximation for the standard error of LOO-R2}
@@ -51,8 +51,42 @@ LOO-R2 is defined as
 \text{R2}_{loo} = 1 - \frac{\text{var}(\hat{e}_{loo}) }{ \text{var}(y)} \label{loor2}
 \end{align}
 
-where $\hat{e}_{loo} = y - \hat{y}_{loo}$. Note that nenominator and denominator of the second term in \eqref{loor2} can be interpreted as mean square error of the LOO predictions and mean squared error of predicting the data with its mean, respectively.
+where $\hat{e}_{loo} = y - \hat{y}_{loo}$. Note that nominator and denominator of the second term in \eqref{loor2} can be interpreted as mean squared error of the LOO predictions and mean squared error of predicting the data with its mean, respectively. So we write \eqref{loor2} as 
+\begin{align}
+    \text{R2}_{loo} = 1 - \frac{\text{MSE}_{\hat{e}} }{ \text{MSE}_y} \label{mser2}
+\end{align}
 
+We can then compute the estimatator for the variance of both using approach in (uncertainty loo paper reference here).
+\begin{align}
+    \text{var}(\text{MSE}_{\hat{e}}) &= \frac{1}{n (n-1)} \sum_{i = 1}^n \left( \hat{e}_{loo, i}^2 - \text{MSE}_{\hat{e}} \right)^2 \label{vare}
+\end{align}
+and
+\begin{align}
+    \text{var}(\text{MSE}_y) &= \frac{1}{n (n-1)} \sum_{i = 1}^n \left( (y_i - \hat{y})^2 -\text{MSE}_y \right)^2 \label{vary}
+\end{align},
+where $\bar{y}$ is the sample mean of observations $y$. 
 
+To utilize the Taylor approximation, we need to compute partial derivatives of function $f(x,y) = 1 - \frac{x}{y}$. With a simple calculus, we get
+\begin{align}
+    \frac{\partial}{\partial x}f(x,y) = -\frac{1}{y} \\
+    \frac{\partial}{\partial y}f(x,y) = \frac{x}{y^2}.
+\end{align}
+
+Substituting these into \eqref{varapprox} yields
+\begin{align}
+    \text{var}(f(X, Y) \approx \frac{1}{\mu_Y^2} \left( \text{var}(X) - 2 \frac{\mu_X}{\mu_Y} \text{cov}(X,Y) + \left( \frac{\mu_X}{\mu_Y} \right)^2 \text{var}(Y) \right) \label{ratiovar}.
+\end{align}
+
+ To use this expression for the mean squared errors, we also need the covariance between $\text{MSE}_{\hat{e}}$ and $\text{MSE}_y$. This can be estimated in a similar way as the variances:
+ \begin{align}
+     \text{cov}(\text{MSE}_{\hat{e}}, \text{MSE}_{y} ) = \frac{1}{n (n -1 )} \sum_{i = 1}^n \left( \hat{e}_{loo, i}^2 - \text{MSE}_{\hat{e}} \right) \left( (y_i - \hat{y})^2 -\text{MSE}_y \right) \label{cov}.
+ \end{align}
+ 
+ Putting all pieces together, variance, and consequently the standard error, of LOO-R2 estimator can then be approximated by letting $\mu_X = \text{MSE}_{\hat{e}}$ and $\mu_Y = \text{MSE}_y$ and then substituting with \eqref{vare}, \eqref{vary} and \eqref{cov} into \eqref{ratiovar}:
+ \begin{align}
+     \text{var}(\text{R2}_{loo}) &= \frac{1}{\text{MSE}_y^2} \left( \text{var}(\text{MSE}_{\hat{e}}) - 2 \frac{\text{MSE}_{\hat{e}}}{\text{MSE}_y} \text{cov}(\text{MSE}_{\hat{e}}, \text{MSE}_{y} ) +  \left( \frac{\text{MSE}_{\hat{e}}}{\text{MSE}_y} \right)^2 \text{var}(\text{MSE}_y) \right) \label{estimator}.
+ \end{align}
+ 
+\section{Simulation experiments}
 
 \end{document}
