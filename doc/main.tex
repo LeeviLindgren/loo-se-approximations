@@ -23,7 +23,7 @@ After computing LOO-R2 estimate, we obviously want to quantify the uncertainty o
 
 The idea is to note that LOO-R2 is defined as a function of a ratio of two random variables. We can then use Taylor approximation of the function and the mean, variance, and covariance of the two random variables to approximate the standard error of the LOO-R2 estimator. 
 
-This approach was motivated by the work by \cite{hastings1970monte} who proposes an approximation for the variance of the ratio of two random variables. However, the formula provided by cite{hastings1970monte} contains two typos: on page 8, in the formula for the variance of the ratio, $Z$ is missing the "bar" symbol and computed variance $s_{\bar{Z}}$ is missing the second power. The missing second power caused the author of this report to mistake it for the standard deviation instead of variance, which was followed by weird simulation results. 
+This approach was motivated by the work by \cite{hastings1970monte} who proposes an approximation for the variance of the ratio of two random variables. However, the formula provided by \cite{hastings1970monte} contains two typos: on page 8, in the formula for the variance of the ratio, $\bar{Z}$ is missing the "bar" symbol and computed variance $s_{\bar{Z}}$ is missing the second power. The missing second power caused the author of this report to mistake it for the standard deviation instead of variance, which was followed by weird simulation results. 
 
 \section{Taylor approximation for a function of two variables}
 
@@ -118,6 +118,7 @@ Figure \ref{fig:simres_low_n} runs similar experiments, but $n$ is now either 5 
     \label{fig:simres_low_n}
 \end{figure}
 
+Finally, we run three additional simulations, where we set the prior of $\beta$ as $N(0, 10)$ and let the number of predictors be either 20, 50, or 100 and number of observations be $n = 50$. With the wide prior and high number of predictors compared to $n$, models are likely to overfit the data badly and we should be observing R2 values close to 1. From figure 
 
 \newpage
 \bibliographystyle{plainnat}
