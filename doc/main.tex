@@ -118,11 +118,11 @@ Figure \ref{fig:simres_low_n} runs similar experiments, but we focus for lower v
     \label{fig:simres_low_n}
 \end{figure}
 
-Finally, we run three additional simulations, where we set the prior of $\beta$ as $N(0, 10)$ and let the number of predictors be either 20, 50, or 100 and the number of observations be $n = 50$. With the wide prior and high number of predictors compared to $n$, models are likely to overfit the data badly and we should be observing R2 values close to 1. From figure \ref{fig:simres_high_p} blah
+Finally, we run three additional simulations, where we set the prior of $\beta$ as $N(0, 10)$ and let the number of predictors be either 20, 50, or 100 and the number of observations be $n = 50$. With the wide prior and high number of predictors compared to $n$, models are likely to overfit the data badly, and we should be observing R2 values close to 1. From figure \ref{fig:simres_high_p} we observe that when the number of predictors is 50 or 100, Taylor approximation seems to produce downward biased estimates.
 
 \begin{figure}
     \centering
-    \includegraphics[width=\textwidth]{simres_high_p}
+    \includegraphics[width=\textwidth]{simres_high_p_n50.png}
     \caption{ Simulation results for high number of predictors.}
     \label{fig:simres_high_p}
 \end{figure}
