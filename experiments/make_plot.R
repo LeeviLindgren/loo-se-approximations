@@ -1,7 +1,7 @@
 library(tidyverse)
 
 
-results <- readRDS('simres.Rds')
+results <- readRDS('simres_high_p_n50.Rds')
 
 tibble(results) %>% 
   unnest_wider(results) %>%
@@ -16,9 +16,7 @@ tibble(results) %>%
   facet_wrap(~ facet_label) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-ggsave('figures/simres.png', width = 15, height = 15, dpi = 300)
+w = 280
+#ggsave('figures/simres_high_p_n50.png', width = w, height = w * 1.414, units = "mm")
+ggsave('figures/simres_high_p_n50.png', width = w, height = w * 0.7, units = "mm", dpi = 150)
 
-
-for (res in results) {
-  
-}

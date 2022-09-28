@@ -3,15 +3,24 @@ library(rstanarm)
 library(foreach)
 
 
+get_X <- function(n, p, rho) {
+  Sigma <- matrix(rho, nrow = p, ncol = p)
+  for (i in 1:p) {
+    Sigma[i, i] = 1
+  }
+  MASS::mvrnorm(n = n, mu = rep(0, p), Sigma = Sigma)
+}
+
 n_cores <- as.integer(Sys.getenv('SLURM_CPUS_PER_TASK', parallel::detectCores() - 2))
 cl <- parallel::makeCluster(n_cores)
 doParallel::registerDoParallel(cl)
 
-
-n <- c(100, 500, 1000)
-p <- c(1, 5, 10)
-sigma <- c(2, 1, 0.5)
+n <- c(50)
+p <- c(20, 50, 100)
+sigma <- c(0.5)
 K <- c(100)
+rho <- 0
+
 
 sim_params <- expand.grid(n=n, p=p, sigma=sigma, K=K)
 sim_params <- split(sim_params, seq_len(nrow(sim_params)))
@@ -25,13 +34,14 @@ system.time({results <- foreach(sim_param = sim_params,
     r2_means <- numeric()
     for (k in 1:sim_param$K) {
       
-      X <- matrix(rnorm(sim_param$n * sim_param$p), nrow = sim_param$n)
+      X <- get_X(sim_param$n, sim_param$p, rho)
       beta <- rnorm(sim_param$p)
       eps <- rnorm(sim_param$n) * sim_param$sigma
       y <- X %*% beta + eps
       data <- data.frame(y = y, X)
       
-      fit <- stan_glm(y ~ ., data = data, refresh = 0)
+      #fit <- stan_glm(y ~ ., data = data, refresh = 0)
+      fit <- stan_glm(y ~ ., data = data, refresh = 0, prior = normal(0, 10))
       loo_r2 <- loo_R2(fit)
       
       
@@ -65,6 +75,6 @@ system.time({results <- foreach(sim_param = sim_params,
     result
   }
 })
+parallel::stopCluster(cl)
 
-
-saveRDS(results, 'simres.Rds')
+saveRDS(results, 'simres_high_p_n50.Rds')
