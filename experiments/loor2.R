@@ -1,15 +1,7 @@
 library(loo)
 library(rstanarm)
 library(foreach)
-
-
-get_X <- function(n, p, rho) {
-  Sigma <- matrix(rho, nrow = p, ncol = p)
-  for (i in 1:p) {
-    Sigma[i, i] = 1
-  }
-  MASS::mvrnorm(n = n, mu = rep(0, p), Sigma = Sigma)
-}
+source('experiments/util.R')
 
 n_cores <- as.integer(Sys.getenv('SLURM_CPUS_PER_TASK', parallel::detectCores() - 2))
 cl <- parallel::makeCluster(n_cores)
