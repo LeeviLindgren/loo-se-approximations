@@ -110,7 +110,7 @@ Alternatively, we could use some other approach, such as Bayesian bootstrap (\ci
     \toprule
         notation & meaning \\ \midrule
         $p_t(\tilde{y})$ & The "true" data generating distribution, which is typically unknown. \\
-        y_i | y_{-i} & $y_i$ given all other observations than $y_i$. E.g. $p(y_i | y_{-i})$ denotes the leave one out predictive distribution of $y_i$. \\
+        $y_i | y_{-i}$ & $y_i$ given all other observations than $y_i$. E.g. $p(y_i | y_{-i})$ denotes the leave one out predictive distribution of $y_i$. \\
         $ u(M_k | y) $ & Utility for model $M_k$ with respect to the true data generating process given the observed data $y_i$. \\
         $u(M_k, y_i | y)$ & Utility for a single data point, if applicable
         
@@ -235,8 +235,17 @@ Substituting these into \eqref{varapprox} yields
  \end{align}
  
 \section{Simulation experiments}
-\subsection{RMSE}
+We use simple simulation experiments to illustrate the behaviour of the proposed estimators for the variance. These simulation are by no means exhaustive, and more elaborate experiments are needed to verify the validity of the Taylor approximation method. We study the properties of the Taylor approximation of the variance of the estimator, and Taylor approximation of the variance of the difference when the utility is either RMSE or R-squared.
 
+The procedure is as follows:
+
+\subsection{RMSE}
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=\textwidth]{figures/rmse.pdf}
+    \caption{Comparison of Taylor (x-axis) and Bayesian bootstrap (y-axis) approximations. Left panel shows the variance estimator for the RMSE estimator \eqref{eq:rmse} and right panel the variance estimator of the RMSE difference \eqref{eq:rmse-diff}.}
+    \label{fig:rmse-plot}
+\end{figure}
 
 
 \subsection{LOO-R2}
