@@ -59,7 +59,7 @@ u(M_k | y) = \int u(M_k, \hat{a}_k, \tilde{y} | y) p_t(\tilde{y}) d\tilde{y}, \l
 \end{equation}
 where $\hat{a}_k$ denotes the optimal decision under $M_k$. For example, if the defined utility is mean squared error (MSE), the optimal decision, or prediction, is using the posterior predictive expectation of $\tilde{y}$, i.e., $E\left[ \tilde{y} | y, M_k \right]$. Then Equation \eqref{eq:true-utility} for MSE can be written as
 $$
-u^{\text{MSE}}(M_k | y) = \int \left( \tilde{y} - E\left[ \tilde{y} | y, M_k \right] \right)^2 p_t(\tilde{y}) d\tilde{y}
+u_{\text{MSE}}(M_k | y) = \int \left( \tilde{y} - E\left[ \tilde{y} | y, M_k \right] \right)^2 p_t(\tilde{y}) d\tilde{y}
 $$
 
 Computing \eqref{eq:true-utility} poses a challenge as we rarely know the true mechanism which generates the data, $p_t(y)$. In optimal case we would have independent test data $\tilde{y}_i, i=1,...,\tilde{n}$ and \eqref{eq:true-utility} would be easy to compute using
@@ -86,23 +86,34 @@ Ideas from the previous section can be extended into the context of model compar
 \begin{align}
     u(M_A, M_B | y) &= u(M_A | y) - u(M_B | y) \nonumber \\ 
     &= \int u(M_A, \hat{a}_k, \tilde{y} | y) p_t(\tilde{y}) d\tilde{y} - \int u(M_B, \hat{a}_k, \tilde{y} | y) p_t(\tilde{y}) d\tilde{y} \nonumber \\
-    &= \int \left( u(M_A, \hat{a}_k, \tilde{y} | y) - u(M_B, \hat{a}_k, \tilde{y} | y) \right) p_t(\tilde{y}) d\tilde{y}
+    &= \int \left( u(M_A, \hat{a}_k, \tilde{y} | y) - u(M_B, \hat{a}_k, \tilde{y} | y) \right) p_t(\tilde{y}) d\tilde{y} \label{eq:true-diff}
 \end{align}
 
-Following the ideas from the previous section, we can compute the estimators for the difference in utilities given e.g. independent test data, training data or LOO re-use of data. As we will focus on LOO estimators in the following sections, we only state LOO estimator for the difference:
+Following the ideas from the previous section, we can compute the estimators for the difference in utilities given e.g. independent test data, training data or LOO re-use of data. As we will focus on LOO estimators in the following sections, we only state LOO estimator for the difference. We use the definitions by \cite{vehtari_practical_2016} and \cite{sivula_uncertainty_2022}:
 \begin{align}
     \hat{u}_{\text{LOO}}(M_A, M_B | y) &= \frac{1}{n} \sum_{i=1}^n u(M_A, \hat{a}_k, y_i | y_{-i}) - \frac{1}{n} \sum_{i=1}^n u(M_A, \hat{a}_k, y_i | y_{-i}) \nonumber \\
-    &:= \frac{1}{n}\sum_{i=1}^n u(M_A, M_B, y_i | y_{-i})
+    &:= \frac{1}{n}\sum_{i=1}^n u(M_A, M_B, y_i | y_{-i}) \label{eq:loo-diff}.
 \end{align}
-
 
 
 \subsection{Assessing the uncertainty of the estimators}
-If we knew $p_t(y)$, we could compute the quantity \eqref{eq:true-utility} with arbitrary accuracy and there would be no uncertainty. If we had an independent testdata, then the uncertainty could be quantified with the Monte Carlo standard error of \eqref{eq:test-utility}. 
+If we knew $p_t(y)$, we could compute the quantity \eqref{eq:true-utility} with arbitrary accuracy. Alternatively, if we had an independent test dataset, then the uncertainty could be quantified with the Monte Carlo standard error of \eqref{eq:test-utility}. Moreover, if the variance of the individual components $\hat{u}_{\text{test}}(M_k, \hat{a}_k, \tilde{y}_i | y)$ is finite, the error distribution will converge towards normal distribution. 
 
-However, for particular utilities, such root mean squared error (RMSE) and (Bayesian) R-squared, we "loose" the information of individual terms. Take the RMSE as an example. It is defined as the square root of the mean squared error, so we don't have the individual utility terms $u(M_k, \hat{a}_k, y_i | \cdot)$
+Following \cite{vehtari_practical_2016} and \cite{sivula_uncertainty_2022}, we can compute Monte Carlo error of \eqref{eq:loo-utility} and \eqref{eq:loo-diff} in a similar way, by considering the individual terms in the corresponding sums. These Monte Carlo error estimates describe the \textit{epistemic} uncertainty about the true values \eqref{eq:true-utility} and \eqref{eq:true-diff}, arising due to the fact that we are working with finite data. (NOTE: check if this is correct)
 
-Alternatively, we could use some other approach, such as Bayesian bootstrap (\cite{rubin_bayesian_1981}, \cite{vehtari_bayesian_2002}, \cite{vehtari_survey_2012}).
+Variance of the estimator is
+\begin{align}
+    \text{var} \left( \hat{u}_{\text{LOO}}(M_k | y) \right)  &= \frac{1}{n-1} \sum_{i = 1}^n \left( \hat{u}_{\text{LOO}}(M_k, y_i | y_{-i}) -  \frac{1}{n} \sum_{i=1}^n \hat{u}_{\text{LOO}}(M_k, y_i | y_{-i}) \right)^2, \label{eq:var-loo}
+\end{align}
+and the variance of the difference \eqref{eq:loo-diff}:
+\begin{align}
+    \text{var} \left( \hat{u}_{\text{LOO}}(M_A, M_B | y) \right) &= \frac{1}{n-1} \sum_{i = 1}^n \left( \hat{u}_{\text{LOO}}(M_A, M_B, y_i | y_{-i}) -  \frac{1}{n} \sum_{i=1}^n \hat{u}_{\text{LOO}}(M_A, M_B, y_i | y_{-i}) \right)^2. \label{eq:var-loo-diff}
+\end{align}
+When estimating LOO utilities, \cite{sivula_uncertainty_2022} note that these naive variance estimators are typically biased since the individual LOO terms are not independent in general.
+
+For particular utilities, such root mean squared error (RMSE) and (Bayesian) R-squared, we "loose" the information of individual terms. Take the RMSE as an example. It is defined as the square root of the mean squared error, so we don't have the individual utility terms $u(M_k, \hat{a}_k, y_i | \cdot)$ to work with. In these cases, the uncertainty could be quantified by methods such as Bayesian bootstrap (BB) (\cite{rubin_bayesian_1981}, \cite{vehtari_bayesian_2002}, \cite{vehtari_survey_2012}). We propose an analytical approximation making use of Taylor expansions of functions of random variables. 
+
+In the upcoming sections, we demonstrate how Taylor expansions can be used to obtain analytical approximations of the variance estimators in cases when it is not possible to compute \eqref{eq:var-loo} or \eqref{eq:var-loo-diff} directly. 
 
 \begin{table}[]
     \centering
@@ -119,20 +130,31 @@ Alternatively, we could use some other approach, such as Bayesian bootstrap (\ci
     \label{tab:notation}
 \end{table}
 
-\section{Taylor approximation for a function of two variables}
+\section{Taylor series approximations}
+Taylor series of a function is a infinite sum in which each term is a partial derivative of increasing order. Function value at a particular point and the value of the Taylor series sum coincide at that point. By truncating the Taylor sum, one obtains approximations of a function around some point. Perhaps the most common approximations are the first order (linear) and second order approximations.
 
-Let $f(x, y): \mathbb{R}^2 \rightarrow \mathbb{R}$ be a function of two (random) variables. The first order Taylor approximation of a function of two variables around point $x_0, y_0$ is given by
-\begin{align}
-    f(x, y) &\approx f(x_0, y_0) + \frac{\partial }{\partial x} f(x_0, y_0) (x - x_0) + \frac{\partial }{\partial y} f(x_0, y_0) (y - y_0) \label{tapprox}
-\end{align}
+First order Taylor approximation of a function $f: \mathbb{R} \rightarrow \mathbb{R}$ of a single variable around point $x_0$ is
+\begin{equation*}
+    f(x) \approx f(x_0) + \frac{\partial f}{\partial x}(x)(x-x_0) \label{eq:tapprox1d}.
+\end{equation*}
 
-Now, let's take two random variables $X$ and $Y$ and do the approximation around the expected values $(\mu_X, \mu_Y)$ = $(E[X], E[Y])$. Using \eqref{tapprox} we get
+Bivariate case is similar. Let $f(x, y): \mathbb{R}^2 \rightarrow \mathbb{R}$ be a function of two (random) variables. The first order Taylor approximation of a function of two variables around point $x_0, y_0$ is given by
+\begin{align*}
+    f(x, y) &\approx f(x_0, y_0) + \frac{\partial }{\partial x} f(x_0, y_0) (x - x_0) + \frac{\partial }{\partial y} f(x_0, y_0) (y - y_0) \label{eq:tapprox2d}
+\end{align*}
+
+Now, let's take a random variable $X$ and approximate $f: \mathbb{R} \rightarrow \mathbb{R}$ around the expected value of $X$, $\mu_X$:
+\begin{equation}
+    f(X) \approx f(\mu_X) + \frac{\partial f}{\partial x}(X)(X-\mu_X) \label{eq:rvtapprox1d}.
+\end{equation}
+
+With two random variables $X$ and $Y$ and the approximation around the expected values $(\mu_X, \mu_Y)$ = $(E[X], E[Y])$, we get
 \begin{align}
-    f(X, Y) \approx f(\mu_X, \mu_Y) + \frac{\partial }{\partial x} f(\mu_X, \mu_Y) (X - \mu_X) + \frac{\partial }{\partial y} f(\mu_X, \mu_Y) (Y - \mu_Y) \label{rvtapprox}
+    f(X, Y) \approx f(\mu_X, \mu_Y) + \frac{\partial }{\partial x} f(\mu_X, \mu_Y) (X - \mu_X) + \frac{\partial }{\partial y} f(\mu_X, \mu_Y) (Y - \mu_Y) \label{eq:rvtapprox2d}.
 \end{align}
 
 \subsection{Taylor approximation for the expected value}
-Given that terms containing partial derivatives in \eqref{rvtapprox} go to zero under expectation, we get the following, simple, first order approximation for the expected value of $f(X, Y)$:
+Given that terms containing partial derivatives in \eqref{eq:rvtapprox2d} go to zero under expectation, we get the following, simple, first order approximation for the expected value of $f(X, Y)$:
 \begin{align}
     E[f(X, Y)] \approx f(\mu_X, \mu_Y) \label{eapprox}
 \end{align}
@@ -147,42 +169,105 @@ Next, we plug in \eqref{rvtapprox} for $f(X,Y)$ which yields (we write $\frac{\p
 \begin{align}
     \text{var}(f(X, Y)) &\approx E\left[ \left( \frac{\partial f}{\partial x} (X - \mu_X) + \frac{\partial f}{\partial y} (Y - \mu_Y) \right)^2 \right] \nonumber \\
     &= E\left[ \left( \frac{\partial f}{\partial x}  \right)^2 (X - \mu_X)^2 + 2 \frac{\partial f}{\partial x} \frac{\partial f}{\partial y} (X - \mu_X)(Y - \mu_Y) + \left( \frac{\partial f}{\partial y}  \right)^2 (Y - \mu_Y)^2  \right] \nonumber \\
-    &= \left( \frac{\partial f}{\partial x}  \right)^2 \text{var}(X) + 2 \frac{\partial f}{\partial x} \frac{\partial f}{\partial y} \text{cov}(X, Y) + \left( \frac{\partial f}{\partial y}  \right)^2 \text{var}(Y) \label{varapprox}
+    &= \left( \frac{\partial f}{\partial x}  \right)^2 \text{var}(X) + 2 \frac{\partial f}{\partial x} \frac{\partial f}{\partial y} \text{cov}(X, Y) + \left( \frac{\partial f}{\partial y}  \right)^2 \text{var}(Y) \label{eq:varapprox2d}
 \end{align}
 
 \section{Approximations for standard errors of LOO utilities}
 In what follows, we consider general setting, where we have $n$ observations $(y_i, x_i)$ in which $x_i \in \mathbb{R}^p$ and $y_i \in \mathbb{R}$. We are estimating some utility $u(M_k | y)$ with $\hat{u}(M_k |y)$ computed from the sample.
-
 
 \begin{table}[]
     \centering
     \begin{tabular}{l c c p{0.4\linewidth}}
     \toprule
     $u(M | y)$ & $\widehat{Var}(u)$  & $\widehat{Var}(u(M_A, M_B))$ & Comment \\ \midrule
-    MAE & & \\
-    MSE & & \\
-    RMSE  & & \\
-    $R^2$ & Equation \eqref{eq:loor2-se} & & $R^2$ is expressed in terms of ratio of two mean squared errors and Taylor approximation is used.
+    MSE & \eqref{eq:var-loo-mse} & \eqref{eq:var-loo-diff-mse} & Needed for the Taylor approximation\\
+    RMSE  & \eqref{eq:var-loo-rmse} & \eqref{eq:var-loo-diff-rmse} & RMSE is expressed in terms of MSE\\
+    $R^2$ & Equation \eqref{eq:var-loo-diff-r2} & \eqref{eq:var-loo-diff-r2} & $R^2$ is expressed in terms of ratio of two mean squared errors and Taylor approximation is used.
     \end{tabular}
     \caption{Taylor approximations for the standard error estimators of different utilities. The middle column refers to the equation of standard error estimator. The equations for standard error estimator for the difference between two utilities are reported in the right-most column.}
     \label{tbl:se-approximations}
 \end{table}
 
-\subsection{Mean absolute error}
-The first metric we consider is mean absolute error (MAE).
+%\subsection{Mean absolute error}
+%\begin{equation}
+%    u(M_k | y)_{\text{MAE}} = \int \left| \tilde{y} - E\left[ \tilde{y} \right| y, M_k \right] | p_t(\tilde{y}) d\tilde{y}.
+%\end{equation}
+%We can estimate this quantity by in-sample estimator
+%\begin{equation}
+%    \hat{u}(M_k | y)_{\text{MAE}} = \frac{1}{n} \sum_{i=1}^n \left| y_i - E\left[ y_i | y, M_k \right] \right|,
+%\end{equation}
+%or by leave-one-out estimator
+%\begin{equation}
+%    \hat{u}(M_k | y)_{\text{LOO-MAE}} = \frac{1}{n} \sum_{i=0}^n \left| y_i - E\left[ y_i | y_{-i}, M_k \right] \right|
+%\end{equation}
+
+\subsection{Mean squared error}
+Mean squared error (MSE) is a well known metric from the point estimation literature. It also turns out, that we can express other utilities (root mean squared error and R-squared) and their standard error estimators in terms of mean squared error. This is also case for the variance of the difference. Hence we need to have estimator for the MSE and variance for that estimator.
+
+MSE is simply defined as
 \begin{equation}
-    u(M_k | y)_{\text{MAE}} = \int \left| \tilde{y} - E\left[ \tilde{y} \right| y, M_k \right] | p_t(\tilde{y}) d\tilde{y}.
+    u_{\text{MSE}}(M_k | y) = \int \left( \tilde{y} - E\left[ \tilde{y} | y, M_k \right] \right)^2 p_t(\tilde{y}) d\tilde{y}.
 \end{equation}
 We can estimate this quantity by in-sample estimator
-\begin{equation}
-    \hat{u}(M_k | y)_{\text{MAE}} = \frac{1}{n} \sum_{i=1}^n \left| y_i - E\left[ y_i | y, M_k \right] \right|,
-\end{equation}
+\begin{align}
+    \hat{u}_{\text{MSE}}(M_k | y) &= \frac{1}{n} \sum_{i=1}^n \hat{u}_{\text{MSE}}(M_k, y_i | y) \nonumber \\ 
+    &= \frac{1}{n} \sum_{i=1}^n \left( y_i - E\left[ y_i | y, M_k \right] \right)^2,
+\end{align}
 or by leave-one-out estimator
-\begin{equation}
-    \hat{u}(M_k | y)_{\text{LOO-MAE}} = \frac{1}{n} \sum_{i=0}^n \left| y_i - E\left[ y_i | y_{-i}, M_k \right] \right|
-\end{equation}
+\begin{align}
+    \hat{u}_{\text{LOO-MSE}}(M_k | y) &=\frac{1}{n} \sum_{i=1}^n \hat{u}_{\text{LOO-MSE}}(M_k, y_i | y_{-i}) \nonumber \\
+    &=\frac{1}{n} \sum_{i=0}^n \left( y_i - E\left[ y_i | y_{-i}, M_k \right] \right)^2. \label{eq:loo-mse}
+\end{align}
+Using \eqref{eq:var-loo}, we write the variance of the estimator \eqref{eq:loo-mse} as
+\begin{align}
+    \widehat{\text{var}}\left( \hat{u}_{\text{LOO-MSE}}(M_k | y) \right) &= \frac{1}{n-1} \sum_{i = 1}^n \left( \left( y_i - E[y_i | y_{-i}, M_k]\right)^2 -  \frac{1}{n} \sum_{i=1}^n \left( y_i - E[y_i | y_{-i}, M_k]\right)^2 \right)^2 \label{eq:var-loo-mse}.
+\end{align}
+In-sample estimator would be computed analogically. 
+
+%For the computation of the estimators of the difference between MSE-LOO and variance of the difference, we use \eqref{eq:loo-diff} and %\eqref{eq:var-loo-diff}. First define $\hat{e}_i^{(k)} := (y_i - E[y_i | y_{-i}, M_k])^2$ as the ith squared LOO residual of model k. Then:
+%\begin{align}
+%    \hat{u}_{\text{LOO-MSE}}(M_A, M_B | y) &= \frac{1}{n}\sum_{i=1}^n \left( \hat{e}_i^{(A)} - \hat{e}_i^{(B)} \right) \label{eq:loo-diff-mse}
+%\end{align}
+%\begin{align}
+    %\widehat{\text{var}}\left( \hat{u}_{\text{LOO-MSE}}(M_A, M_B | y) \right) = \frac{1}{n-1} \sum_{i=1}^n \left( \left( \hat{e}_i^{(A)} %\hat{e}_i^{(B)} \right) - \frac{1}{n}\sum_{i=1}^n \left( \hat{e}_i^{(A)} - \hat{e}_i^{(B)} \right) \right)^2
+% \label{eq:var-loo-diff-mse}
+%\end{align}
 
 \subsection{Root mean squared error}
+Root mean squared error is simply defined as the square root of MSE and the estimator is, not surprisingly, the square root of MSE estimator in \eqref{eq:loo-mse}:
+\begin{equation*}
+    \hat{u}_{\text{LOO-RMSE}}(M_k|y) = \sqrt{\hat{u}_{\text{LOO-MSE}}(M_k|y)}.
+\end{equation*}
+As RMSE can be interpreted as a function of MSE, we can use the Taylor method to approximate the variance of the estimator. Following the previous section, the variance of function $f(x)$ can be expressed in terms of variance of $X$. First, we need the derivative of the function $f(x)= \sqrt{x}$, which is obviously
+$$
+\frac{\partial f}{\partial x} = \frac{1}{2 \sqrt{x}}.
+$$
+Variance of the such function is then approximated by \eqref{eq:varapprox1d}:
+\begin{align*}
+    \text{var}(f(X)) \approx \frac{\text{var}(X)}{4 \sqrt{\mu_X}}.
+\end{align*}
+Since RMSE is a function of MSE, we can plug in estimator and variance of that estimate into $\mu_X$ and $\text{var}(X)$ to obtain an approximation of the variance of the RMSE estimator:
+\begin{equation}
+    \widehat{\text{var}} \left( \hat{u}_{\text{LOO-RMSE}}(M_k|y) \right) :=  \frac{\widehat{\text{var}}\left( \hat{u}_{\text{LOO-MSE}}(M_k | y) \right)}{4 \hat{u}_{\text{LOO-MSE}}(M_k | y)} \label{eq:var-loo-rmse}
+\end{equation}
+
+If we want to compare two models based on RMSE we want to quantify the uncertainty in the comparison. Variance of the RMSE difference between two models can be also approximated using the same trick. Now we have a function of two random variables
+$$
+f(x,y) = \sqrt{x} - \sqrt{y}.
+$$
+The partials are
+\begin{align*}
+    \frac{\partial f}{\partial x} &= \frac{1}{2 \sqrt{x}} \\
+    \frac{\partial f}{\partial y} &= -\frac{1}{2 \sqrt{y}},
+\end{align*}
+and plugging these into \eqref{eq:varapprox2d} yields\footnote{Recall that \eqref{eq:varapprox2d} is the first order Taylor approximation of the variance around the expected values of $X$ and $Y$}
+\begin{align*}
+    \text{var}\left(f(X,Y)\right) \approx \frac{\text{var}(X)}{4\sqrt{\mu_X}} - \frac{\text{cov}(X,Y)}{2 \sqrt{\mu_X} \sqrt{\mu_Y}} + \frac{\text{var}(Y)}{4\sqrt{\mu_Y}}.
+\end{align*}
+
+\begin{equation}
+    \widehat{\text{var}} \left( \hat{u}(M_A, M_B | y) \right) :=  \frac{\widehat{\text{var}}\left( \hat{u}(M_k | y) \right)}{4 \hat{u}(M_A | y)} - \frac{\widehat{\text{cov}}(\hat{u}(M_A | y), \hat{u}(M_B | y)) }{2 \sqrt{\hat{u}(M_A | y) \hat{u}(M_B | y)}} + \frac{\widehat{\text{var}}\left( \hat{u}(M_B | y) \right)}{4 \hat{u}(M_B | y)} \label{eq:var-loo-diff-rmse}
+\end{equation}
 
 \subsection{R-squared}
 R-squared, or R2, is a typical measure used to assess how well a model fits data. \cite{gelman_r-squared_2019} propose a Bayesian version of the R2 as the classical R2 might get values larger than 1 for Bayesian regression models. See details from the paper. A nice property of Bayesian R2 is that we get a distribution of R2 values "for free", as it is computed using posterior predictive mean values of the model. This means that we can quantify the uncertainty of the estimator easily.
@@ -219,7 +304,7 @@ To utilize the Taylor approximation, we need to compute partial derivatives of f
     \frac{\partial}{\partial y}f(x,y) = \frac{x}{y^2}.
 \end{align}
 
-Substituting these into \eqref{varapprox} yields
+Substituting these into \eqref{eq:varapprox2d} yields
 \begin{align}
     \text{var}(f(X, Y) \approx \frac{1}{\mu_Y^2} \left( \text{var}(X) - 2 \frac{\mu_X}{\mu_Y} \text{cov}(X,Y) + \left( \frac{\mu_X}{\mu_Y} \right)^2 \text{var}(Y) \right) \label{ratiovar}.
 \end{align}
@@ -237,7 +322,15 @@ Substituting these into \eqref{varapprox} yields
 \section{Simulation experiments}
 We use simple simulation experiments to illustrate the behaviour of the proposed estimators for the variance. These simulation are by no means exhaustive, and more elaborate experiments are needed to verify the validity of the Taylor approximation method. We study the properties of the Taylor approximation of the variance of the estimator, and Taylor approximation of the variance of the difference when the utility is either RMSE or R-squared.
 
-The procedure is as follows:
+We consider simple data generating  mechanism in which we vary the sample size $n \in \{20, 50, 100, 200 \}$ and number of predictors $p \in \{ 2, 3, 5 \}$.
+\begin{equation*}
+    \begin{aligned}
+    y_i &\sim N(\beta^T x_i, \sigma^2) \\
+    x_i &\sim N(0, 1) \\
+    \beta &\sim N(0, 1)
+    \end{aligned}
+\end{equation*}
+We then with two models $M_A$ and $M_B$ with one and two predictors respectively. Hence for the cases in which $p \neq 2$ both of the models are miss-specified. Then we compute the variance of the estimator for \eqref{eq:true-utility} using Bayesian bootstrap and the proposed Taylor approximation. We only report the variance estimator for the larger model $M_B$. We also compute the variance estimator of the difference in utilities \eqref{eq:true-diff}. For each pair of $(n, p)$, we repeat the procedure for 100 times.
 
 \subsection{RMSE}
 \begin{figure}[!htb]
@@ -247,35 +340,15 @@ The procedure is as follows:
     \label{fig:rmse-plot}
 \end{figure}
 
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=\textwidth]{figures/loo_rmse.pdf}
+    \caption{Comparison of Taylor (x-axis) and Bayesian bootstrap (y-axis) approximations. Left panel shows the variance estimator for the RMSE estimator \eqref{eq:rmse} and right panel the variance estimator of the RMSE difference \eqref{eq:rmse-diff}.}
+    \label{fig:rmse-plot}
+\end{figure}
+
 
 \subsection{LOO-R2}
-To illustrate behaviour of the approximation for LOO-R2 standard error, we run a set of simulations with a few different configurations. We proceed as follows: choose number of observations $n$, number of predictors $p$ and observational noise $\sigma$ and then, draw predictor matrix $X \in \mathbb{R}^{n \times p}$ and $\beta \in \mathbb{R}^{p}$ from $N(0, 1)$ and  $\epsilon \in \mathbb{R}^{n}$ from $N(0, \sigma^2)$. Then we compute $y = X \beta + \epsilon$ for which we with linear model using R-package rstanarm \citep{rstanarm}. We repeat this for 100 for each set of parameters. See underlying code from \url{https://github.com/LeeviLindgren/loo-r2-se}.
-
-Figure \ref{fig:simres} plots standard error obtained from the Taylor approximation and Bayesian bootstrap for different values of $n$, $\sigma$, and $p$. The diagonal line represents points where x and y-axis values are equal and the actual simulation results are represented with the dots. Dots' color indicates the underlying LOO-R2 estimate obtained by taking the mean of BB samples.
-\begin{figure}
-    \centering
-    \includegraphics[width=\textwidth]{simres.png}
-    \caption{ Simulation results for larger values of n.}
-    \label{fig:simres}
-\end{figure}
-
-Figure \ref{fig:simres_low_n} runs similar experiments, but we focus for lower values of $n$, 5 or 10. Not surprisingly, we see more dispersion in the standard error estimates. One pattern seems to be that when the R2 estimate is small (darker dots) compared to the standard error, we start to bias in the Taylor approximation.
-
-\begin{figure}
-    \centering
-    \includegraphics[width=\textwidth]{simres_low_n.png}
-    \caption{ Simulation results for lower values of n.}
-    \label{fig:simres_low_n}
-\end{figure}
-
-Finally, we run three additional simulations, where we set the prior of $\beta$ as $N(0, 10)$ and let the number of predictors be either 20, 50, or 100 and the number of observations be $n = 50$. With the wide prior and high number of predictors compared to $n$, models are likely to overfit the data badly, and we should be observing R2 values close to 1. From figure \ref{fig:simres_high_p} we observe that when the number of predictors is 50 or 100, Taylor approximation seems to produce downward biased estimates.
-
-\begin{figure}
-    \centering
-    \includegraphics[width=\textwidth]{simres_high_p_n50.png}
-    \caption{ Simulation results for high number of predictors.}
-    \label{fig:simres_high_p}
-\end{figure}
 
 \newpage
 \bibliographystyle{plainnat}
