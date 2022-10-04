@@ -1,4 +1,3 @@
-# Experiment the approximations MSE, MAE and RMSE errors
 library(rstanarm)
 source('experiments/config.R')
 
@@ -35,28 +34,33 @@ for (i in seq_along(sim)) {
     loo_epred1 = loo_epred(fit1)
     loo_epred2 = loo_epred(fit2)
     
-    # RMSE
-    var_diff_bb[j] = var_rmse_diff_bb(y, epred1, epred2)
-    var_diff_taylor[j] = var_rmse_diff_taylor(y, epred1, epred2)
-    var_bb[j] = var_rmse_bb(y, epred2)
-    var_taylor[j] = var_rmse_taylor(y, epred2)
+    # R2
+    r21 = bayes_R2(fit1)
+    r22 = bayes_R2(fit2)
+    loo_r21 = loo_R2(fit1)
+    loo_r22 = loo_R2(fit2)
     
-    # LOO RMSE
-    var_diff_bb_loo[j] = var_rmse_diff_bb(y, loo_epred1, loo_epred2)
-    var_diff_taylor_loo[j] = var_rmse_diff_taylor(y, loo_epred1, loo_epred2)
-    var_bb_loo[j] = var_rmse_bb(y, loo_epred2)
-    var_taylor_loo[j] = var_rmse_taylor(y, loo_epred2)
+    # var_diff_bb[j] = var(r22 - r21)
+    # var_diff_taylor[j] = IMPLEMENT
+    var_bb[j] = var(r22)
+    var_taylor[j] = var_r2_taylor(y, epred2)
+    
+    # LOO R2
+    # var_diff_bb_loo[j] = var(loo_r22 - loo_r21)
+    # var_diff_taylor_loo[j] = IMPLEMENT
+    var_bb_loo[j] = var(loo_r22)
+    var_taylor_loo[j] = var_r2_taylor(y, loo_epred2)
   }
   
-  sim[[i]]$var_rmse_diff_bb = list(var_diff_bb)
-  sim[[i]]$var_rmse_diff_taylor = list(var_diff_taylor)
-  sim[[i]]$var_rmse_bb = list(var_bb)
-  sim[[i]]$var_rmse_taylor = list(var_taylor)
+  # sim[[i]]$var_r2_diff_bb = list(var_diff_bb)
+  # sim[[i]]$var_r2_diff_taylor = list(var_diff_taylor)
+  sim[[i]]$var_r2_bb = list(var_bb)
+  sim[[i]]$var_r2_taylor = list(var_taylor)
   
-  sim[[i]]$var_loo_rmse_diff_bb = list(var_diff_bb_loo)
-  sim[[i]]$var_loo_rmse_diff_taylor = list(var_diff_taylor_loo)
-  sim[[i]]$var_loo_rmse_bb = list(var_bb_loo)
-  sim[[i]]$var_loo_rmse_taylor = list(var_taylor_loo)
+  # sim[[i]]$var_loo_r2_diff_bb = list(var_diff_bb_loo)
+  # sim[[i]]$var_loo_r2_diff_taylor = list(var_diff_taylor_loo)
+  sim[[i]]$var_loo_r2_bb = list(var_bb_loo)
+  sim[[i]]$var_loo_r2_taylor = list(var_taylor_loo)
 }
 
 sim = sim %>% 
@@ -67,12 +71,11 @@ sim = sim %>%
          data_reuse = grepl('loo', name),
          data_reuse = if_else(data_reuse, 'LOO', 'In-sample'),
          metric = grepl('diff', name),
-         metric = if_else(metric, 'RMSE diff', 'RMSE')) %>%
+         metric = if_else(metric, 'R2 diff', 'R2')) %>%
   pivot_wider(values_from = value, 
               names_from = 'approximation', 
               id_cols = -name) %>%
   unnest_longer(c(bb, taylor))
-
 
 
 theme_set(theme_bw(base_size = 16))
@@ -100,6 +103,6 @@ p_in_sample = sim %>%
   xlab('SE Taylor approximation') +
   ylab('SE Bayesian bootstrap approximation')
 
+ggsave('figures/loo_r2.pdf', plot = p_loo, device = 'pdf')
 
-ggsave('figures/loo_rmse.pdf', plot = p_loo, device = 'pdf')
-ggsave('figures/rmse.pdf', plot = p_in_sample, device = 'pdf')
+ggsave('figures/r2.pdf', plot = p_in_sample, device = 'pdf')
