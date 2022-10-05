@@ -15,6 +15,9 @@
 \usepackage{listings}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage[section]{placeins}
+
+\newcommand{\residual}[2][i]{\hat{e}_{#1}^{(#2)}}
 
 \graphicspath{ {../figures/} }
 
@@ -28,6 +31,7 @@
 
 \clearpage
 \section*{Note}
+
 The approach in this report was motivated by the work by \cite{hastings1970monte} who proposes an approximation for the variance of the ratio of two random variables. However, the formula provided by \cite{hastings1970monte} contains two typos: on page 8, in the formula for the variance of the ratio, $\bar{Z}$ is missing the "bar" symbol and computed variance $s_{\bar{Z}}$ is missing the second power. The missing second power caused the author of this report to mistake it for the standard deviation instead of variance, which was followed by weird simulation results. Unfortunately, research papers are not like software: you cannot make a pull request to fix a bug.
 \clearpage
 
@@ -173,7 +177,7 @@ Next, we plug in \eqref{rvtapprox} for $f(X,Y)$ which yields (we write $\frac{\p
 \end{align}
 
 \section{Approximations for standard errors of LOO utilities}
-In what follows, we consider general setting, where we have $n$ observations $(y_i, x_i)$ in which $x_i \in \mathbb{R}^p$ and $y_i \in \mathbb{R}$. We are estimating some utility $u(M_k | y)$ with $\hat{u}(M_k |y)$ computed from the sample.
+In what follows, we consider a general setting, where we have $n$ observations $(y_i, x_i)$ in which $x_i \in \mathbb{R}^p$ and $y_i \in \mathbb{R}$. We are estimating some utility $u(M_k | y)$ with $\hat{u}(M_k |y)$ computed from the training data, using LOO or some approximation of LOO, e.g. Pareto smoothed importance sampling LOO estimator (\cite{vehtari_practical_2016}).
 
 \begin{table}[]
     \centering
@@ -204,23 +208,23 @@ In what follows, we consider general setting, where we have $n$ observations $(y
 \subsection{Mean squared error}
 Mean squared error (MSE) is a well known metric from the point estimation literature. It also turns out, that we can express other utilities (root mean squared error and R-squared) and their standard error estimators in terms of mean squared error. This is also case for the variance of the difference. Hence we need to have estimator for the MSE and variance for that estimator.
 
-MSE is simply defined as
+For notational simplicity, we define the squared residual $\residual{k} := (y_i - E[y_i | y, M_k])^2$ and LOO-residual $\residual[i, loo]{k} := (y_i - E[y_i | y_{-i}, M_k])^2$. MSE is simply defined as
 \begin{equation}
     u_{\text{MSE}}(M_k | y) = \int \left( \tilde{y} - E\left[ \tilde{y} | y, M_k \right] \right)^2 p_t(\tilde{y}) d\tilde{y}.
 \end{equation}
 We can estimate this quantity by in-sample estimator
 \begin{align}
     \hat{u}_{\text{MSE}}(M_k | y) &= \frac{1}{n} \sum_{i=1}^n \hat{u}_{\text{MSE}}(M_k, y_i | y) \nonumber \\ 
-    &= \frac{1}{n} \sum_{i=1}^n \left( y_i - E\left[ y_i | y, M_k \right] \right)^2,
+    &= \frac{1}{n} \sum_{i=1}^n \residual{k}
 \end{align}
 or by leave-one-out estimator
 \begin{align}
     \hat{u}_{\text{LOO-MSE}}(M_k | y) &=\frac{1}{n} \sum_{i=1}^n \hat{u}_{\text{LOO-MSE}}(M_k, y_i | y_{-i}) \nonumber \\
-    &=\frac{1}{n} \sum_{i=0}^n \left( y_i - E\left[ y_i | y_{-i}, M_k \right] \right)^2. \label{eq:loo-mse}
+    &=\frac{1}{n} \sum_{i=0}^n \residual[i,loo]{k}. \label{eq:loo-mse}
 \end{align}
 Using \eqref{eq:var-loo}, we write the variance of the estimator \eqref{eq:loo-mse} as
 \begin{align}
-    \widehat{\text{var}}\left( \hat{u}_{\text{LOO-MSE}}(M_k | y) \right) &= \frac{1}{n-1} \sum_{i = 1}^n \left( \left( y_i - E[y_i | y_{-i}, M_k]\right)^2 -  \frac{1}{n} \sum_{i=1}^n \left( y_i - E[y_i | y_{-i}, M_k]\right)^2 \right)^2 \label{eq:var-loo-mse}.
+    \widehat{\text{var}}\left( \hat{u}_{\text{LOO-MSE}}(M_k | y) \right) &= \frac{1}{n-1} \sum_{i = 1}^n \left( \residual[i, loo]{k} -  \frac{1}{n} \sum_{i=1}^n \residual[i, loo]{k} \right)^2 \label{eq:var-loo-mse}.
 \end{align}
 In-sample estimator would be computed analogically. 
 
@@ -266,17 +270,32 @@ and plugging these into \eqref{eq:varapprox2d} yields\footnote{Recall that \eqre
 \end{align*}
 
 \begin{equation}
-    \widehat{\text{var}} \left( \hat{u}(M_A, M_B | y) \right) :=  \frac{\widehat{\text{var}}\left( \hat{u}(M_k | y) \right)}{4 \hat{u}(M_A | y)} - \frac{\widehat{\text{cov}}(\hat{u}(M_A | y), \hat{u}(M_B | y)) }{2 \sqrt{\hat{u}(M_A | y) \hat{u}(M_B | y)}} + \frac{\widehat{\text{var}}\left( \hat{u}(M_B | y) \right)}{4 \hat{u}(M_B | y)} \label{eq:var-loo-diff-rmse}
+\begin{aligned}
+\widehat{\text{var}} \left( \hat{u}_{\text{LOO-RMSE}}(M_A, M_B | y) \right) &:=  \frac{\hat{\sigma}^2_{\text{MSE}_A}}{4\sqrt{\hat{\mu}_{\text{MSE}_A}}} - 
+\frac{\text{cov}(\hat{\mu}_{\text{MSE}_A},\hat{\mu}_{\text{MSE}_B})}{2 \sqrt{\hat{\mu}_{\text{MSE}_A}} \sqrt{\hat{\mu}_{\text{MSE}_B}}} + 
+\frac{\hat{\sigma}^2_{\text{MSE}_B}}{4\sqrt{\hat{\mu}_{\text{MSE}_B}}} \\
+\hat{\mu}_{\text{MSE}_A} &= \hat{u}_{\text{LOO-MSE}}(M_A | y)\\
+\hat{\mu}_{\text{MSE}_B} &= \hat{u}_{\text{LOO-MSE}}(M_B | y)\\
+\hat{\sigma}^2_{\text{MSE}_A} &= \widehat{\text{var}}\left(\hat{u}_{\text{LOO-MSE}}(M_A | y)\right) \\
+\hat{\sigma}^2_{\text{MSE}_B} &= \widehat{\text{var}}\left(\hat{u}_{\text{LOO-MSE}}(M_B | y)\right) \\
+\text{cov}(\hat{\mu}_{\text{MSE}_A},\hat{\mu}_{\text{MSE}_B}) &= \frac{1}{n -1 } \sum_{i = 1}^n \left( \left( \residual[i,loo]{A} - \frac{1}{n} \sum_{i=1}^n \residual[i,loo]{A} \right) \left( \residual[i,loo]{B} - \frac{1}{n} \sum_{i=1}^n \residual[i,loo]{B} \right) \right)
+\end{aligned}\label{eq:var-loo-diff-rmse}
 \end{equation}
+%\frac{\widehat{\text{var}}\left( \hat{u}(M_k | y) \right)}{4 \hat{u}(M_A | y)} - \frac{\widehat{\text{cov}}(\hat{u}(M_A | y), \hat{u}(M_B | y)) }{2 \sqrt{\hat{u}(M_A | y) \hat{u}(M_B | y)}} + \frac{\widehat{\text{var}}\left( \hat{u}(M_B | y) \right)}{4 \hat{u}(M_B | y)}
 
 \subsection{R-squared}
-R-squared, or R2, is a typical measure used to assess how well a model fits data. \cite{gelman_r-squared_2019} propose a Bayesian version of the R2 as the classical R2 might get values larger than 1 for Bayesian regression models. See details from the paper. A nice property of Bayesian R2 is that we get a distribution of R2 values "for free", as it is computed using posterior predictive mean values of the model. This means that we can quantify the uncertainty of the estimator easily.
+%R-squared, or R2, is a typical measure used to assess how well a model fits data. \cite{gelman_r-squared_2019} propose a Bayesian version of the R2 as the classical R2 might get values larger than 1 for Bayesian regression models. See details from the paper. A nice property of Bayesian R2 is that we get a distribution of R2 values "for free", as it is computed using posterior predictive mean values of the model. This means that we can quantify the uncertainty of the estimator easily.
 
-If (Bayesian) R2 is computed from the same data that was used to fit the model, it will give an overestimate of the predictive performance on a new, unobserved data. As often we don't have independent test data, we can use cross-validation to estimate the out-of-sample behavior of the R2. \cite{vehtari_practical_2016} propose an efficient and stable method for leave-one-out cross-validation using Pareto smoothed importance sampling. In the paper, log predictive density is used as the utility describing the predictive performance, but the method can easily be extended for other utilities as well, such as R2.
+%If (Bayesian) R2 is computed from the same data that was used to fit the model, it will give an overestimate of the predictive performance on a new, unobserved data. As often we don't have independent test data, we can use cross-validation to estimate the out-of-sample behavior of the R2. \cite{vehtari_practical_2016} propose an efficient and stable method for leave-one-out cross-validation using Pareto smoothed importance sampling. In the paper, log predictive density is used as the utility describing the predictive performance, but the method can easily be extended for other utilities as well, such as R2.
 
-After computing LOO-R2 estimate, we want to quantify the uncertainty of the estimator. The uncertainty in LOO-R2 comes from not knowing the future data distribution \citep{vehtari_survey_2012}. One way to do it is to use Bayesian bootstrap \citep{rubin_bayesian_1981}. However, this report describes how to quantify the uncertainty using an analytical Taylor approximation approach.
+%After computing LOO-R2 estimate, we want to quantify the uncertainty of the estimator. The uncertainty in LOO-R2 comes from not knowing the future data distribution \citep{vehtari_survey_2012}. One way to do it is to use Bayesian bootstrap \citep{rubin_bayesian_1981}. However, this report describes how to quantify the uncertainty using an analytical Taylor approximation approach.
 
-The idea is to note that LOO-R2 is defined as a function of a ratio of two random variables. We can then use Taylor approximation of the function and the mean, variance, and covariance of the two random variables to approximate the standard error of the LOO-R2 estimator. 
+R-squared, or R2, is a typical measure used to assess how well a model fits data. Intuitively speaking is the proportion of the variance in the data a model can explain. 
+\\ \\
+\textbf{SOME THOUGHTS: In the bayesian version of R2 we propagate the uncertainty from our parameter estimates into the predictions and from there into the Bayesian-R2 estimator. In the PSIS-LOO version of the R2, we "loose" the parameter uncertainty to the importance sampling, and quantify the uncertainty by generating (Bayesian) bootstrap samples of the residuals (y - predictions) and data $y$. So these uncertainty estimates seem to measure different uncertainty.
+}\\ \\
+
+As with RMSE, we can interpret R2 as a function of two random variables and utilze the Taylor trick to approximate the variance of the R2 estimator.
 
 LOO-R2 is defined as
 \begin{align}
@@ -343,12 +362,26 @@ We then with two models $M_A$ and $M_B$ with one and two predictors respectively
 \begin{figure}[!htb]
     \centering
     \includegraphics[width=\textwidth]{figures/loo_rmse.pdf}
-    \caption{Comparison of Taylor (x-axis) and Bayesian bootstrap (y-axis) approximations. Left panel shows the variance estimator for the RMSE estimator \eqref{eq:rmse} and right panel the variance estimator of the RMSE difference \eqref{eq:rmse-diff}.}
-    \label{fig:rmse-plot}
+    \caption{LOO RMSE}
+    \label{fig:loo-rmse-plot}
 \end{figure}
 
 
 \subsection{LOO-R2}
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=\textwidth]{figures/r2.pdf}
+    \caption{R2}
+    \label{fig:r2-plot}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=\textwidth]{figures/loo_r2.pdf}
+    \caption{Loo R2}
+    \label{fig:loo-r2-plot}
+\end{figure}
 
 \newpage
 \bibliographystyle{plainnat}
