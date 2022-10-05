@@ -124,10 +124,15 @@ In the upcoming sections, we demonstrate how Taylor expansions can be used to ob
     \begin{tabular}{l | p{0.8\linewidth}}
     \toprule
         notation & meaning \\ \midrule
+        $\hat{\cdot}$ & A hat symbol is used when the underlying quantity is an estimator. \\
         $p_t(\tilde{y})$ & The "true" data generating distribution, which is typically unknown. \\
         $y_i | y_{-i}$ & $y_i$ given all other observations than $y_i$. E.g. $p(y_i | y_{-i})$ denotes the leave one out predictive distribution of $y_i$. \\
-        $ u(M_k | y) $ & Utility for model $M_k$ with respect to the true data generating process given the observed data $y_i$. \\
-        $u(M_k, y_i | y)$ & Utility for a single data point, if applicable
+        $ u(M_k | y) $ & Utility for model $M_k$ with respect to the true data generating process given the observed data $y_i$.  \\
+        $u(M_k, y_i | y)$ & Utility for a single data point, if applicable. \\
+        $u(M_A, M_B | y)$ & Difference in utilities, that is, $u(M_A | y)- u(M_B | y)$. \\
+        $u(M_A, M_B, y_i | y)$ & Point-wise difference in utilities, if applicable. \\
+        $\residual{k}$ & Squared residual of data point $i$ when predicted with the conditional mean by model $k$. \\ 
+        $\residual[i, loo]{k}$ & Squared leave-one-out residual of data point $i$ when predicted with $E[y_i |y_{-1}, M_k]$ \\
         
     \end{tabular}
     \caption{Notation used throughout the paper.}
