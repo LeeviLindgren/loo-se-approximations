@@ -119,7 +119,7 @@ For particular utilities, such root mean squared error (RMSE) and (Bayesian) R-s
 
 In the upcoming sections, we demonstrate how Taylor expansions can be used to obtain analytical approximations of the variance estimators in cases when it is not possible to compute \eqref{eq:var-loo} or \eqref{eq:var-loo-diff} directly. 
 
-\begin{table}[]
+\begin{table}[!htb]
     \centering
     \begin{tabular}{l | p{0.8\linewidth}}
     \toprule
@@ -166,27 +166,40 @@ Given that terms containing partial derivatives in \eqref{eq:rvtapprox2d} go to 
 \subsection{Taylor approximation for variance}
 For variance
 \begin{align}
-    \text{var}(f(X, Y)) &= E\left[ \left(f(X, Y) - E[f(X,Y)] \right)^2 \right] \nonumber \\
-    &\approx E\left[ \left( f(X, Y) - f(\mu_X, \mu_Y) \right)^2 \right] \nonumber
+    \text{var}(f(X)) &= E\left[ \left(f(X) - E[f(X)] \right)^2 \right] \nonumber \\
+    &\approx E\left[ \left( f(X) - f(\mu_X) \right)^2 \right] \nonumber
 \end{align}
-Next, we plug in \eqref{rvtapprox} for $f(X,Y)$ which yields (we write $\frac{\partial }{\partial x} f(\mu_X, \mu_Y) = \frac{\partial f}{\partial x}$ for notational simplicity):
+
+and
+\begin{align}
+    \text{var}(f(X, Y)) &= E\left[ \left(f(X, Y) - E[f(X,Y)] \right)^2 \right] \nonumber \\
+    &\approx E\left[ \left( f(X, Y) - f(\mu_X, \mu_Y) \right)^2 \right] \nonumber.
+\end{align}
+Using \eqref{eq:rvtapprox1d}, Taylor approximation for the variance of a function of single random variable is then (we write $\frac{\partial }{\partial x} f(\mu_X) = \frac{\partial f}{\partial x}$ for notational simplicity):
+\begin{align}
+    \text{var}(f(X)) &\approx E\left[ \left( f(X) - f(\mu_X) \right)^2 \right] \nonumber \\
+    &\approx E\left[ \left( \frac{\partial f}{\partial x} \right)^2 (X - \mu_X) \right] \nonumber \\
+    &= \left( \frac{\partial f}{\partial x} \right)^2 \text{var}(X) \label{eq:varapprox1d}
+\end{align}
+
+Next, we use \eqref{eq:rvtapprox2d} for $f(X,Y)$ which yields
 \begin{align}
     \text{var}(f(X, Y)) &\approx E\left[ \left( \frac{\partial f}{\partial x} (X - \mu_X) + \frac{\partial f}{\partial y} (Y - \mu_Y) \right)^2 \right] \nonumber \\
     &= E\left[ \left( \frac{\partial f}{\partial x}  \right)^2 (X - \mu_X)^2 + 2 \frac{\partial f}{\partial x} \frac{\partial f}{\partial y} (X - \mu_X)(Y - \mu_Y) + \left( \frac{\partial f}{\partial y}  \right)^2 (Y - \mu_Y)^2  \right] \nonumber \\
-    &= \left( \frac{\partial f}{\partial x}  \right)^2 \text{var}(X) + 2 \frac{\partial f}{\partial x} \frac{\partial f}{\partial y} \text{cov}(X, Y) + \left( \frac{\partial f}{\partial y}  \right)^2 \text{var}(Y) \label{eq:varapprox2d}
+    &= \left( \frac{\partial f}{\partial x}  \right)^2 \text{var}(X) + 2 \frac{\partial f}{\partial x} \frac{\partial f}{\partial y} \text{cov}(X, Y) + \left( \frac{\partial f}{\partial y}  \right)^2 \text{var}(Y). \label{eq:varapprox2d}
 \end{align}
 
 \section{Approximations for standard errors of LOO utilities}
 In what follows, we consider a general setting, where we have $n$ observations $(y_i, x_i)$ in which $x_i \in \mathbb{R}^p$ and $y_i \in \mathbb{R}$. We are estimating some utility $u(M_k | y)$ with $\hat{u}(M_k |y)$ computed from the training data, using LOO or some approximation of LOO, e.g. Pareto smoothed importance sampling LOO estimator (\cite{vehtari_practical_2016}).
 
-\begin{table}[]
+\begin{table}[!htb]
     \centering
     \begin{tabular}{l c c p{0.4\linewidth}}
     \toprule
     $u(M | y)$ & $\widehat{Var}(u)$  & $\widehat{Var}(u(M_A, M_B))$ & Comment \\ \midrule
-    MSE & \eqref{eq:var-loo-mse} & \eqref{eq:var-loo-diff-mse} & Needed for the Taylor approximation\\
-    RMSE  & \eqref{eq:var-loo-rmse} & \eqref{eq:var-loo-diff-rmse} & RMSE is expressed in terms of MSE\\
-    $R^2$ & Equation \eqref{eq:var-loo-diff-r2} & \eqref{eq:var-loo-diff-r2} & $R^2$ is expressed in terms of ratio of two mean squared errors and Taylor approximation is used.
+    MSE & \eqref{eq:var-loo-mse} &  & Needed for the Taylor approximation\\
+    RMSE  & \eqref{eq:var-loo-rmse} & \eqref{eq:var-loo-rmse-diff} & RMSE is expressed in terms of MSE\\
+    $R^2$ & \eqref{eq:var-loo-r2} & ?? & $R^2$ is expressed in terms of ratio of two mean squared errors and Taylor approximation is used.
     \end{tabular}
     \caption{Taylor approximations for the standard error estimators of different utilities. The middle column refers to the equation of standard error estimator. The equations for standard error estimator for the difference between two utilities are reported in the right-most column.}
     \label{tbl:se-approximations}
@@ -279,7 +292,7 @@ and plugging these into \eqref{eq:varapprox2d} yields\footnote{Recall that \eqre
 \hat{\sigma}^2_{\text{MSE}_A} &= \widehat{\text{var}}\left(\hat{u}_{\text{LOO-MSE}}(M_A | y)\right) \\
 \hat{\sigma}^2_{\text{MSE}_B} &= \widehat{\text{var}}\left(\hat{u}_{\text{LOO-MSE}}(M_B | y)\right) \\
 \text{cov}(\hat{\mu}_{\text{MSE}_A},\hat{\mu}_{\text{MSE}_B}) &= \frac{1}{n -1 } \sum_{i = 1}^n \left( \left( \residual[i,loo]{A} - \frac{1}{n} \sum_{i=1}^n \residual[i,loo]{A} \right) \left( \residual[i,loo]{B} - \frac{1}{n} \sum_{i=1}^n \residual[i,loo]{B} \right) \right)
-\end{aligned}\label{eq:var-loo-diff-rmse}
+\end{aligned}\label{eq:var-loo-rmse-diff}
 \end{equation}
 %\frac{\widehat{\text{var}}\left( \hat{u}(M_k | y) \right)}{4 \hat{u}(M_A | y)} - \frac{\widehat{\text{cov}}(\hat{u}(M_A | y), \hat{u}(M_B | y)) }{2 \sqrt{\hat{u}(M_A | y) \hat{u}(M_B | y)}} + \frac{\widehat{\text{var}}\left( \hat{u}(M_B | y) \right)}{4 \hat{u}(M_B | y)}
 
@@ -292,8 +305,8 @@ and plugging these into \eqref{eq:varapprox2d} yields\footnote{Recall that \eqre
 
 R-squared, or R2, is a typical measure used to assess how well a model fits data. Intuitively speaking is the proportion of the variance in the data a model can explain. 
 \\ \\
-\textbf{SOME THOUGHTS: In the bayesian version of R2 we propagate the uncertainty from our parameter estimates into the predictions and from there into the Bayesian-R2 estimator. In the PSIS-LOO version of the R2, we "loose" the parameter uncertainty to the importance sampling, and quantify the uncertainty by generating (Bayesian) bootstrap samples of the residuals (y - predictions) and data $y$. So these uncertainty estimates seem to measure different uncertainty.
-}\\ \\
+\textbf{SOME THOUGHTS: In the bayesian version of R2 we propagate the uncertainty from our parameter estimates into the predictions and from there into the Bayesian-R2 estimator. In the PSIS-LOO version of the R2, we "loose" the parameter uncertainty to the importance sampling, and quantify the uncertainty by generating (Bayesian) bootstrap samples of the residuals (y - predictions) and data $y$. So these uncertainty estimates seem to measure different uncertainty.}
+\\ \\
 
 As with RMSE, we can interpret R2 as a function of two random variables and utilze the Taylor trick to approximate the variance of the R2 estimator.
 
@@ -335,7 +348,7 @@ Substituting these into \eqref{eq:varapprox2d} yields
  
  Putting all pieces together, variance, and consequently the standard error, of LOO-R2 estimator can then be approximated by letting $\mu_X = \text{MSE}_{\hat{e}}$ and $\mu_Y = \text{MSE}_y$ and then substituting with \eqref{vare}, \eqref{vary} and \eqref{cov} into \eqref{ratiovar}:
  \begin{align}
-     \text{var}(\text{R2}_{loo}) &= \frac{1}{\text{MSE}_y^2} \left( \text{var}(\text{MSE}_{\hat{e}}) - 2 \frac{\text{MSE}_{\hat{e}}}{\text{MSE}_y} \text{cov}(\text{MSE}_{\hat{e}}, \text{MSE}_{y} ) +  \left( \frac{\text{MSE}_{\hat{e}}}{\text{MSE}_y} \right)^2 \text{var}(\text{MSE}_y) \right) \label{eq:loor2-se}.
+     \text{var}(\text{R2}_{loo}) &= \frac{1}{\text{MSE}_y^2} \left( \text{var}(\text{MSE}_{\hat{e}}) - 2 \frac{\text{MSE}_{\hat{e}}}{\text{MSE}_y} \text{cov}(\text{MSE}_{\hat{e}}, \text{MSE}_{y} ) +  \left( \frac{\text{MSE}_{\hat{e}}}{\text{MSE}_y} \right)^2 \text{var}(\text{MSE}_y) \right) \label{eq:var-loo-r2}.
  \end{align}
  
 \section{Simulation experiments}
@@ -355,7 +368,7 @@ We then with two models $M_A$ and $M_B$ with one and two predictors respectively
 \begin{figure}[!htb]
     \centering
     \includegraphics[width=\textwidth]{figures/rmse.pdf}
-    \caption{Comparison of Taylor (x-axis) and Bayesian bootstrap (y-axis) approximations. Left panel shows the variance estimator for the RMSE estimator \eqref{eq:rmse} and right panel the variance estimator of the RMSE difference \eqref{eq:rmse-diff}.}
+    \caption{Comparison of Taylor (x-axis) and Bayesian bootstrap (y-axis) approximations. Left panel shows the variance estimator for the RMSE estimator and right panel the variance estimator of the RMSE difference.}
     \label{fig:rmse-plot}
 \end{figure}
 
